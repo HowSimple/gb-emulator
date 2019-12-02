@@ -1,11 +1,5 @@
 #pragma once
-
-
-
-class CPU
+class RAM
 {
-
-	 
-	
 };
 

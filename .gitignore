@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+*.ipch
+.vs/Gameboy/v16/.suo
+*.db
+*.opendb

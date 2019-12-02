@@ -124,11 +124,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CPU.cpp" />
+    <ClCompile Include="Gameboy.cpp" />
+    <ClCompile Include="Instruction.cpp" />
+    <ClCompile Include="RAM.cpp" />
     <ClCompile Include="Registers.cpp" />
+    <ClCompile Include="Registers_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPU.h" />
+    <ClInclude Include="Gameboy.h" />
+    <ClInclude Include="Instruction.h" />
+    <ClInclude Include="RAM.h" />
     <ClInclude Include="Registers.h" />
+    <ClInclude Include="Registers_Test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,11 +1,8 @@
 #pragma once
 
 
-
-class CPU
+class Instructions
 {
-
 	 
-	
 };
 
