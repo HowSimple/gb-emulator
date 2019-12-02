@@ -30,7 +30,7 @@
     <ClCompile Include="Gameboy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Registers_Test.cpp">
+    <ClCompile Include="Registers_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -48,9 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gameboy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Registers_Test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

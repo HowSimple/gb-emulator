@@ -34,3 +34,9 @@
 .vs/Gameboy/v16/.suo
 *.db
 *.opendb
+*.tlog
+*.log
+*.pdb
+*.ilk
+*.txt
+*.idb
