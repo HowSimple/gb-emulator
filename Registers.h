@@ -1,30 +1,51 @@
 #pragma once
+#include <cstdint>
 
 
-typedef unsigned char byte;
-typedef char signed_byte;
-typedef unsigned short _8b;
-typedef signed short _16b;
+typedef uint8_t _8b;
+typedef uint16_t _16b;
 
 struct Registers
-{
-	// CPU registers, each stores 8-bits
-	_8b a;
-	_8b b;
-	_8b c;
-	_8b d;
-	_8b e;
-	_8b f;
-	_8b h; 
-	_8b l;
-
-	
-
-
-	// 16-bit getters/setters 
-	_16b get_af();
-	void set_af(_16b);
-
+{	// registers can be accessed individually or as a pair
+	// each pair of registers occupies the same 16bit location
+	struct {
+		union {
+			struct {
+				_8b f;
+				_8b a;
+			};
+			_16b af;
+		};
+	};
+	struct {
+		union {
+			struct {
+				_8b c;
+				_8b b;
+			};
+			_16b bc;
+		};
+	};
+	struct {
+		union {
+			struct {
+				_8b e;
+				_8b d;
+			};
+			_16b de;
+		};
+	};
+	struct {
+		union {
+			struct {
+				_8b l;
+				_8b h;
+			};
+			_16b hl;
+		};
+	};
+	_16b sp;
+	_16b pc;
 
 };
 

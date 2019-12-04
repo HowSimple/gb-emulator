@@ -6,10 +6,10 @@
 #include <iostream>
 #include <bitset>
 
-typedef unsigned char byte;
-typedef char signed_byte;
-typedef unsigned short _8b;
-typedef signed short _16b;
+
+typedef char _1b;
+typedef uint8_t _8b;
+typedef uint16_t _16b;
 
 
 
@@ -18,15 +18,26 @@ int main()
 
 
 	Registers regs;
-	regs.a = 200;
-	regs.f = 135;
-	std::cout << "a: " << regs.a << " " << std::bitset<8>(regs.a) << "\n";
-	std::cout << "f: " << regs.f << std::bitset<8>(regs.f) << "\n";
-	std::cout << "af: " << regs.get_af() << std::bitset<16>(regs.get_af()) << "\n";
 	_16b num = 12345;
 	regs.set_af(num);
-	std::cout << "b: " << regs.f << "\n";
+	std::cout << "a: " << " " << std::bitset<8>(regs.a) << "\n";
+	std::cout << "f: " << std::bitset<8>(regs.f) << "\n";
+	std::cout << "af: " << std::bitset<16>(regs.get_af()) << "\n";
+
+	regs.a = 200;
+	regs.f = 135;
+	std::cout << "a: " << " " << std::bitset<8>(regs.a) << "\n";
+	std::cout << "f: " << std::bitset<8>(regs.f) << "\n";
+	std::cout << "af: " << std::bitset<16>(regs.get_af()) << "\n";
 
 	return 0;
 }
 
+bool regTest(Registers regs)
+{
+	
+	
+
+	return true;
+
+}

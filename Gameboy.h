@@ -1,20 +1,20 @@
 #pragma once
 #include "Registers.h"
-#include "CPU.h"
-#include "RAM.h"
-#include "Instruction.h"
+#include "instructions.h"
 #include <iostream>
+#include <cstdint>
 
-typedef unsigned char byte;
-typedef char signed_byte;
-typedef unsigned short _8b;
-typedef signed short _16b;
 
+typedef char _1b;
+typedef uint8_t _8b;
+typedef uint16_t _16b;
 
 class Gameboy
 {
 	 Registers regs;
 
+	 _1b screen[160][144][3];
+	 _1b ram[8192];
 
 };
 
