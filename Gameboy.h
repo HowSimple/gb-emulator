@@ -1,20 +1,37 @@
 #pragma once
 #include "Registers.h"
-#include "instructions.h"
 #include <iostream>
 #include <cstdint>
+#include<vector>
+#include<string>
+#include<fstream>
+#include<iterator>
 
-
-typedef char _1b;
-typedef uint8_t _8b;
-typedef uint16_t _16b;
+ 
+typedef unsigned char u1;
+typedef uint8_t u8;
+typedef uint16_t u16;
+enum rom_bank { MBC1, MBC2, OFF };
 
 class Gameboy
 {
-	 Registers regs;
+	public: 
+		Gameboy(std::string filename);
+		Gameboy();
+		u1 screen[160][144][3];
+		std::vector<u1> cart;
+		u1 ram[8192];
+		Registers regs;
+		void load_cartridge(std::string filename);
+		void display_cartridge();
+	private:
+		
+		
+		rom_bank mode;
 
-	 _1b screen[160][144][3];
-	 _1b ram[8192];
+		
+		void initialize_ram();
+		void fetch_instruction();
+	
 
 };
-
