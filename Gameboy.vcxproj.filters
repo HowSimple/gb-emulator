@@ -15,36 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CPU.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Registers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Instruction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RAM.cpp">
+    <ClCompile Include="Instructions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Gameboy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Registers_tests.cpp">
+    <ClCompile Include="Flags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CPU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Registers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Instruction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RAM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gameboy.h">
