@@ -18,7 +18,10 @@ void Gameboy::initialize_ram()
 	else if (cart[0x147] == 5 || cart[0x147] == 6)
 		mode = MBC2;
 	else mode = OFF;
-
+	for (auto i : cart)
+	{
+		if (i >= 0 ) 
+	}
 	for (auto i = 0; i < 0x3FFF && i < cart.size(); i++)
 		ram[i] = cart[i];
 
