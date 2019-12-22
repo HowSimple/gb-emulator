@@ -2,16 +2,9 @@
 
 void Gameboy::load_cartridge(std::string filename)
 {
-	/*std::ifstream cart(filename);
-	std::vector<u8> bytes;
-	u8 byte;
-	while (cart >> byte)
-	{
-		bytes.push_back(byte);
-	}*/
-	std::ifstream file(filename, std::ios::binary);
-	std::vector<char> bytes((std::istreambuf_iterator<char>(file)),
-		std::istreambuf_iterator<char>());
+
+	
+
 }
 void Gameboy::display_cartridge()
 {
@@ -26,15 +19,25 @@ void Gameboy::initialize_ram()
 		mode = MBC2;
 	else mode = OFF;
 
-	for (int i = 0; i < 0x3FFF && i < cart.size(); i++)
+	for (auto i = 0; i < 0x3FFF && i < cart.size(); i++)
 		ram[i] = cart[i];
 
 }
 
 Gameboy::Gameboy(std::string filename)
 {
-	load_cartridge(filename);
-	//initialize_ram();
+	//load_cartridge(filename);
+	std::ifstream file(filename, std::ios::binary);
+	file.skipws;
+	u1 byte;
+	file >> byte;
+	while (!file.eof())
+	{
+		cart.push_back(byte);
+		file >> byte;
+	}
+	
+	initialize_ram();
 }
 
 Gameboy::Gameboy()
