@@ -127,7 +127,7 @@
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="Gameboy.cpp" />
     <ClCompile Include="Instructions.cpp" />
-    <ClCompile Include="Flags.cpp" />
+    <ClCompile Include="Registers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPU.h" />
