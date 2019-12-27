@@ -99,7 +99,7 @@
 	{
 		Registers reg;
 		reg.a = 8;
-
+		
 		reg.op_dec(reg.a);
 		EXPECT_EQ(reg.a, 7);
 	}
@@ -109,7 +109,7 @@
 		reg.a = 0b00101110;
 		reg.b = 0b11101010;
 
-		reg.op_and(reg.a, reg.b);
+		reg.op_and(reg.b);
 		EXPECT_EQ(reg.a, 0b00101010);
 
 		EXPECT_EQ(reg.get_carry(), 0);
@@ -124,7 +124,7 @@
 		reg.a = 0b00001110;
 		reg.b = 0b11100000;
 
-		reg.op_or(reg.a, reg.b);
+		reg.op_or(reg.b);
 		EXPECT_EQ(reg.a, 0b11101110);
 	}
 	TEST(Registers, or01F)
@@ -133,7 +133,7 @@
 		reg.a = 0b00001110;
 		reg.b = 0b11100000;
 
-		reg.op_or(reg.a, reg.b);
+		reg.op_or(reg.b);
 		EXPECT_EQ(reg.a, 0b11101110);
 		EXPECT_EQ(reg.get_zero(), 0);
 	
@@ -145,7 +145,7 @@
 		reg.a = 0b01101110;
 		reg.b = 0b11101100;
 
-		reg.op_xor(reg.a, reg.b);
+		reg.op_xor(reg.b);
 		EXPECT_EQ(reg.a, 0b10000010);
 	}
 
@@ -155,7 +155,7 @@
 		reg.a = 0b01101110;
 		reg.b = 0b11101100;
 
-		reg.op_xor(reg.a, reg.b);
+		reg.op_xor(reg.b);
 		EXPECT_EQ(reg.a, 0b10000010);
 
 		EXPECT_EQ(reg.get_carry(), 0);
@@ -181,10 +181,14 @@
 	TEST(Registers, ld02)
 	{
 		Registers reg;
-		reg.op_ld(reg.bc, 0b11111111);
-		EXPECT_EQ(reg.bc, 0b11111111);
-		reg.op_ld(reg.de, 0b11000111);
-		EXPECT_EQ(reg.de, 0b11000111);
+		u16 value1 = 0b11111111;
+		u16 value2 = 0b11000111;
+		reg.op_ld(reg.bc, value1);
+		EXPECT_EQ(reg.bc, value1);
+		reg.op_ld(reg.af, value2);
+		EXPECT_EQ(reg.af, value2);
+		reg.op_ld(reg.de, value2);
+		EXPECT_EQ(reg.de, reg.af);
 	}
 	/*TEST(Registers, ld03)
 	{
