@@ -44,9 +44,9 @@ void CPU::set_d8(u8 value)
 	cycles += 16;
 	ram[sp + 1] = value;
 }
-void CPU::execute_cb_opcode()
+void CPU::execute_cb_opcode(u1 opcode)
 {
-	u1 opcode = fetch_opcode();
+	//u1 opcode = fetch_opcode();
 	switch (opcode)
 	{
 	case 0x00:	{	op_rlc(b);						cycles += 8; break;}
