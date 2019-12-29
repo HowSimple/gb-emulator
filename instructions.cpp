@@ -1,7 +1,5 @@
-//#include "Registers.h"
-//#include "Registers.cpp"
 #include "CPU.h"
-
+#include <stdexcept>
 
 void CPU::update_halfc(u8 target, u8 source)
 {
@@ -55,10 +53,11 @@ void CPU::op_ld(u16& target, u16 source) // load source to target
 void CPU::op_inc(u8& target) // increment target
 {
 	u8 temp = target;
-	target++;
-	f.zero = 0;
+	//	target++;
+	update_halfc(target, target++);
+	update_zero(target);
 	f.subt = 0;
-	update_halfc(target, temp);
+	
 }
 
 void CPU::op_inc(u16& target) // increment target
@@ -166,13 +165,20 @@ void CPU::op_rl(u8& reg)	// rotate left. carry to bit 0. bit 7 to carry.
 	f.subt = 0;
 }
 // shift instructions
-void CPU::op_sla(u8& value)	// shift left. bit 7 to carry flag. bit 0 set to 0.
-{// TODO: needs implementation
+void CPU::op_sla(u8& reg)	// shift left. bit 7 to carry flag. bit 0 set to 0.
+{
+	f.carry = ((reg >> 7) & 1);
+	reg = (reg << 1) & 0;
+	
 	f.halfc = 0;
 	f.subt = 0;
 }
-void CPU::op_sra(u8& value)	// shift right. bit 0 to carry flag. 
+void CPU::op_sra(u8& reg)	// shift right. bit 0 to carry flag. 
 {// TODO: needs implementation
+	
+	f.carry = ((reg >> 0) & 1);
+	reg = (reg >> 1) & 0;
+
 	f.carry = 0;
 	f.halfc = 0;
 	f.subt = 0;
@@ -211,8 +217,8 @@ void CPU::op_sub(u8& target, u8 source) // adds value at source to target
 	update_zero(target);
 }
 void CPU::op_sbc(u8& target, u8 source) // subtract with carry
-{// TODO: needs implementation
-
+{
+	op_sub(target, source - f.carry);
 }	
 void CPU::op_adc(u8& target, u8 source) // adds value at source and carry to target. 
 {
@@ -223,10 +229,6 @@ void CPU::op_adc(u8& target, u8 source) // adds value at source and carry to tar
 	update_zero(target);
 
 }
-
-
-
-
 
 // logical instructions
 void CPU::op_xor(u8 target) // bitwise XOR on A and target, store in A 
@@ -297,27 +299,31 @@ void CPU::op_jp(bool condition) // push reg to stack
 		op_jp();
 	else cycles -= 4;
 }
-void CPU::op_jr()
+void CPU::op_jr(s8 operand)
 {// TODO: needs implementation
 
 }
 void CPU::op_jr(bool condition)
 {
 	if (condition)
-		op_jr();
-	else cycles -= 4;
+		op_jr(get_s8());
+	else
+	{
+		cycles -= 4;
+		get_s8();
+	}
 }
 
 // stack instructions
 void CPU::op_pop(u16& reg) // pop 2 bytes from stack to register
 {
-	reg = (ram[sp] << 8) | (ram[sp - 1]);
+	reg = (mem.ram[sp] << 8) | (mem.ram[sp - 1]);
 	sp += 2;
 	
 }
 void CPU::op_push(u16 value) // push value to stack
 {
-	ram[sp] = value;
+	mem.ram[sp] = value;
 	sp -= 2;
 	
 }
@@ -379,7 +385,7 @@ void CPU::op_nop() // 'no-op'
 }
 void CPU::op_undefined() // undefined instruction
 {// TODO: needs implementation
-
+	throw std::out_of_range("illegal CPU instruction");
 }
 void CPU::op_halt() // stop CPU until interrupt
 {// TODO: needs implementation
@@ -404,14 +410,22 @@ void CPU::op_cp(u16 target)
 // interrupt instructions
 void CPU::op_di() // disable interrupts after next instruction
 {// TODO: needs implementation
-
+	interrupts.joypad.enabled = false;
+	interrupts.vblank.enabled = false;
+	interrupts.serial.enabled = false;
+	interrupts.timer.enabled = false;
+	interrupts.lcdstat.enabled = false;
 }
 void CPU::op_ei() // enable interrupts after next instruction
 {// TODO: needs implementation
-
+	interrupts.joypad.enabled = true;
+	interrupts.vblank.enabled = true;
+	interrupts.serial.enabled = true;
+	interrupts.timer.enabled = true;
+	interrupts.lcdstat.enabled = true;
 }
 
-void CPU::op_daa() // enable interrupts after next instruction
+void CPU::op_daa() // 
 {// TODO: needs implementation
 	f.halfc = 0;
 }
