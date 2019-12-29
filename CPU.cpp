@@ -30,21 +30,20 @@ s8 CPU::get_s8() // get signed 8-bit immediate value from RAM
 
 void CPU::set_d16(u16 value)
 {
-	mem.ram[sp + 1] = value;
+	mem.ram[pc + 1] = value;
 }
 void CPU::set_d8(u8 value)
 {
 	mem.ram[pc] = value;
 }
-u1 CPU::fetch_opcode()
+u8 CPU::fetch_opcode()
 {
-	u1 opcode = mem.ram[pc];
+	u8 opcode = mem.ram[pc];
 	pc++;
 	return opcode;
 }
-void CPU::execute_cb_opcode(u1 opcode)
+void CPU::execute_cb_opcode(u8 opcode)
 {
-	//u1 opcode = fetch_opcode();
 	switch (opcode)
 	{
 	case 0x00: {	op_rlc(b);						cycles += 8; break; }
@@ -319,7 +318,7 @@ void CPU::execute_cb_opcode(u1 opcode)
 	}
 }
 
-void CPU::execute_opcode(u1 opcode)
+void CPU::execute_opcode(u8 opcode)
 {
 	switch (opcode)
 	{

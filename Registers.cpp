@@ -38,19 +38,19 @@ void Registers::set_sub(bool x)
 {
 	f.subt = x;
 }
-u1 Registers::get_carry()
+u8 Registers::get_carry()
 {
 	return f.carry;
 }
-u1 Registers::get_halfc()
+u8 Registers::get_halfc()
 {
 	return f.halfc;
 }
-u1 Registers::get_zero()
+u8 Registers::get_zero()
 {
 	return f.zero;
 }
-u1 Registers::get_sub()
+u8 Registers::get_sub()
 {
 	return f.subt;
 }

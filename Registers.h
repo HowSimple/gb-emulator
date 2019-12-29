@@ -7,20 +7,20 @@
 
 typedef uint8_t u8;
 typedef uint16_t u16;
-typedef unsigned char u1;
+
 enum flag { ZERO = 7, SUBT = 6, HALFC = 5, CARRY = 4};
 
 class Registers
 {
 	public:
 		Registers();
-		u1 get_carry();
+		u8 get_carry();
 
-		u1 get_halfc();
+		u8 get_halfc();
 
-		u1 get_zero();
+		u8 get_zero();
 
-		u1 get_sub();
+		u8 get_sub();
 
 		void set_carry(bool x);
 
