@@ -13,6 +13,6 @@ TEST(Gameboy, loadcart01)
 	ASSERT_TRUE(gb.cart.size() > 0);
 	EXPECT_EQ(gb.cart[1], 0xC9);
 	EXPECT_EQ(gb.cart[17], 0xC9);
-	EXPECT_EQ(gb.cart[511], 71);
+	EXPECT_EQ(gb.cart[512], 71);
 
 }

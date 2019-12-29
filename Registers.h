@@ -29,13 +29,8 @@ class Registers
 		void set_zero(bool x);
 
 		void set_sub(bool x);
-
-
+	   	
 	
-			   
-	
-	// registers can be accessed individually or as a pair
-	// each pair of registers occupies the same 16bit location
 	
 		struct flags {
 			bool zero;
@@ -47,16 +42,17 @@ class Registers
 		
 				
 			
-			
-		struct {
-			union {
-				struct {
-					u8 a;
-					flags f;
-				};
-				u16 af;
+		// all registers can be accessed individually or as a pair
+		// each pair of registers occupies the same 16bit location		
+	struct {
+		union {
+			struct {
+				u8 a;
+				flags f;
 			};
+			u16 af;
 		};
+	};
 	
 	struct {
 		union {
