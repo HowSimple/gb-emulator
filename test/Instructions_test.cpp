@@ -54,13 +54,12 @@ TEST(CPU, inc01)
 TEST(CPU, inc02)
 {
 	CPU reg;
-	reg.a = 8;
-	reg.b = 4;
+	reg.a = 0xFF;
 
 	reg.op_inc(reg.a);
-	EXPECT_EQ(reg.a, 9);
+	EXPECT_EQ(reg.a, 0);
 	EXPECT_EQ(reg.get_carry(), 0);
-	EXPECT_EQ(reg.get_zero(), 0);
+	EXPECT_EQ(reg.get_zero(), 1);
 	EXPECT_EQ(reg.get_halfc(), 0);
 
 
@@ -137,16 +136,18 @@ TEST(CPU, xor01f)
 	EXPECT_EQ(reg.a, 0b10000010);
 
 	EXPECT_EQ(reg.get_carry(), 0);
-	EXPECT_EQ(reg.get_halfc(), 1);
+	EXPECT_EQ(reg.get_halfc(), 0);
+	EXPECT_EQ(reg.get_zero(), 0);
+	EXPECT_EQ(reg.get_sub(), 0);
 }
 
 TEST(CPU, swap01)
 {
 	CPU reg;
 
-	reg.a = 0b00000110;
+	reg.a = 0b00001111;
 	reg.op_swap(reg.a);
-	EXPECT_EQ(reg.a, 0b01100000);
+	EXPECT_EQ(reg.a, 0b11110000);
 }
 
 TEST(CPU, ld01)
@@ -156,46 +157,112 @@ TEST(CPU, ld01)
 	reg.op_ld(reg.a, reg.b);
 	EXPECT_EQ(reg.a, 0x4);
 }
-TEST(CPU, ld02)
-{
-	CPU reg;
-	u16 value1 = 0b11111111;
-	u16 value2 = 0b11000111;
-	reg.op_ld(reg.bc, value1);
-	EXPECT_EQ(reg.bc, value1);
-}
 
-
-TEST(CPU, ld03)	// test AF behavior
-{
-	CPU cpu;
-	u16 value1 = 0b11111111;
-	cpu.op_ld(cpu.af, value1);
-	EXPECT_EQ(cpu.af, 0b11110000);
-}
-
-
-/*
-TEST(CPU, swap01)
-{
-	CPU cpu;
-	cpu.a = 0b11000000;
-	cpu.op_swap(cpu.a);
-	EXPECT_EQ(cpu.a, 0b00001100);
-}
-*/
-
-/*
-TEST(CPU, swap02)
+TEST(CPU, op_swap01)
 {
 	CPU cpu;
 	
-	cpu.hl = 0b1111000000001101;
-	cpu.op_swap(cpu.ram[cpu.hl]);
-	EXPECT_EQ(cpu.bc, 0b00001100);
+	cpu.a = 0b01001111;
+	cpu.op_swap(cpu.a);
+	EXPECT_EQ(cpu.a, 0b11110100);
 }
-*/
 
+TEST(CPU, op_rr01)
+{
+	CPU cpu;
+	cpu.f.carry = 0;
+	cpu.a = 0b00111111;
+	cpu.op_rr(cpu.a);
+	EXPECT_EQ(cpu.a, 0b00011111);
+}
+
+TEST(CPU, op_rl01)
+{
+	CPU cpu;
+
+	cpu.a = 0b00111111;
+	cpu.op_rl(cpu.a);
+	EXPECT_EQ(cpu.a, 0b01111110);
+}
+TEST(CPU, op_sla01)
+{
+	CPU cpu;
+
+	cpu.a = 0b10011111;
+	cpu.op_sla(cpu.a);
+	EXPECT_EQ(cpu.a, 0b00111110);
+}
+TEST(CPU, op_sla02)
+{
+	CPU cpu;
+
+	cpu.a = 0b10011111;
+	cpu.op_sla(cpu.a);
+	EXPECT_EQ(cpu.a, 0b00111110);
+	EXPECT_EQ(cpu.f.carry, 1);
+
+}
+TEST(CPU, op_sra01)
+{
+	CPU cpu;
+
+	cpu.a = 0b00111111;
+	cpu.op_sra(cpu.a);
+	EXPECT_EQ(cpu.a, 0b00011111);
+}
+TEST(CPU, op_sra02)
+{
+	CPU cpu;
+
+	cpu.a = 0b00111111;
+	cpu.op_sra(cpu.a);
+	EXPECT_EQ(cpu.a, 0b00011111);
+	EXPECT_EQ(cpu.f.carry, 1);
+}
+TEST(CPU, op_set01)
+{
+	CPU cpu;
+
+	cpu.a = 0b11000011;
+	cpu.op_set(4, cpu.a);
+	EXPECT_EQ(cpu.a, 0b11010011);
+}
+TEST(CPU, op_res01)
+{
+	CPU cpu;
+
+	cpu.a = 0b11111111;
+	cpu.op_res(4, cpu.a);
+	EXPECT_EQ(cpu.a, 0b11101111);
+}
+
+TEST(CPU, op_sbc01)	
+{
+	CPU cpu;
+
+	cpu.a = 0b00111111;
+	cpu.b = 0b0;
+	cpu.f.carry = 0;
+	cpu.op_sbc(cpu.a, cpu.b);
+	EXPECT_EQ(cpu.a, 0b00111111);
+	cpu.f.carry = 0;
+	cpu.a = 0b00111111;
+	cpu.b = 0b111;
+	cpu.op_sbc(cpu.a, cpu.b);
+	EXPECT_EQ(cpu.a, 0b00111000);
+
+	
+}
+TEST(CPU, op_adc01)
+{
+	CPU cpu;
+
+	cpu.a = 0b00111100;
+	cpu.b = 0b10;
+	cpu.f.carry = 0;
+	cpu.op_adc(cpu.a, cpu.b);
+	EXPECT_EQ(cpu.a, 0b00111110);
+}
 TEST(CPU, run_opcode_0x03)
 {
 	CPU cpu;
