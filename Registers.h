@@ -1,14 +1,10 @@
 #pragma once
 #include <cstdint>
-#include <bitset>
-#include <iostream>
 #include <cstdlib>
 
 
 typedef uint8_t u8;
 typedef uint16_t u16;
-
-enum flag { ZERO = 7, SUBT = 6, HALFC = 5, CARRY = 4};
 
 class Registers
 {
@@ -21,7 +17,6 @@ class Registers
 		u8 get_zero();
 
 		u8 get_sub();
-
 		void set_carry(bool x);
 
 		void set_halfc(bool x);
@@ -29,26 +24,14 @@ class Registers
 		void set_zero(bool x);
 
 		void set_sub(bool x);
-	   	
-	
-	
-		struct flags {
-			bool zero;
-			bool subt;
-			bool halfc;
-			bool carry;
-
-		};
-		
 				
-			
 		// all registers can be accessed individually or as a pair
 		// each pair of registers occupies the same 16bit location		
 	struct {
 		union {
 			struct {
 				u8 a;
-				flags f;
+				struct { bool zero, subt, halfc, carry; } f;
 			};
 			u16 af;
 		};
