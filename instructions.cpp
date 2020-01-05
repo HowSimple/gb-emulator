@@ -155,8 +155,7 @@ void CPU::op_sla(u8& target)	// shxift left. bit 7 to carry flag. bit 0 set to 0
 	update_zero(target);
 }
 void CPU::op_sra(u8& target)	// shift right. bit 0 to carry flag. 
-{// TODO: needs implementation
-	
+{// 	
 	reg.f.carry = ((target >> 0) & 1);
 	target = target >> 1;
 	reg.f.halfc = 0;
@@ -249,49 +248,43 @@ void CPU::op_scf() // set carry flag to true
 }
 
 // jump instructions
-void CPU::op_jp() // jump to immediate address
-{// TODO: needs implementation
-	reg.pc += get_imm_16();
+void CPU::op_jp(u16 address) // jump to immediate address
+{// 
+	reg.pc = address;
 }
-void CPU::op_jp(bool condition) // conditional jump
+void CPU::op_jpc(bool condition) // conditional jump
 {
+	u16 address = get_imm_16();
 	if (condition)
-		op_jp();
-	else cycles -= 4;
+		op_jp(address);
+	else
+		cycles -= 4;
 }
 void CPU::op_jr()
-{// TODO: needs implementation
+{
+	reg.pc += get_imm_s8();
+}
+void CPU::op_jr(s8 address)
+{
+	reg.pc += address;
 	
 }
-void CPU::op_jr(bool condition)
+void CPU::op_jrc(bool condition)
 {
+	u16 address = get_imm_s8();
 	if (condition)
-		op_jr(get_imm_s8());
+		op_jr(address);
 	else
-	{
 		cycles -= 4;
-		get_imm_s8();
-	}
 }
 
-// stack instructions
-void CPU::op_pop(u16& value) // pop 2 bytes from stack to register
-{
-	value = (ram[reg.sp] << 8) | (ram[reg.sp - 1]);
-	reg.sp += 2;
-	
-}
-void CPU::op_push(u16 value) // push value to stack
-{
-	// TODO: reg.split value into two bytes to load to RAM
-	ram[reg.sp] = value;
-	reg.sp -= 2;
-	
-}
+
 // call instructions
 void CPU::op_rst(u8 address)	// 'restart'. push current address to stack, jump to address
-{// TODO: needs implementation
-	//op_call(address);
+{
+	push_16b(reg.pc);
+	
+	reg.pc = address;
 	
 }
 
@@ -299,12 +292,16 @@ void CPU::op_call(bool condition) // conditionally call address
 {
 	if (condition)
 		op_call();
-	else cycles -= 4;
+	else
+	{	// TODO: cleanup. 
+		cycles -= 4;
+		get_imm_16();
+	}
 }
 void CPU::op_call() // call address
-{	// TODO: needs implementation
-	op_push(reg.sp);
-
+{	
+	push_16b(reg.pc);
+	op_jp(get_imm_16());
 
 
 }
@@ -316,8 +313,8 @@ void CPU::op_ret(bool condition) // conditionally return
 	else cycles -= 4;
 }
 void CPU::op_ret()
-{// TODO: needs implementation
-
+{
+	op_jp(pop_16b());
 }
 // bit instructions
 
@@ -366,7 +363,7 @@ void CPU::op_cpl(u8 target) //  set target to complement of target
 	reg.f.halfc = 1;
 }
 void CPU::op_cp(u8 source)
-{// TODO: needs implementation
+{
 	u8 temp = reg.a - source;
 	reg.set_sub(1);
 	update_carry(temp, source);
