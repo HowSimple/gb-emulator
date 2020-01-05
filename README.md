@@ -19,6 +19,7 @@ Sprite support.
 Timer register.
 
 Unit tests for the graphics system.
+Unit tests for interrupt handling.
 
 MBC support (to support games larger than 32KB). 
 
