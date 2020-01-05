@@ -10,13 +10,13 @@ class Registers
 {
 	public:
 		Registers();
-		u8 get_carry();
+		bool get_carry();
 
-		u8 get_halfc();
+		bool get_halfc();
 
-		u8 get_zero();
+		bool get_zero();
 
-		u8 get_sub();
+		bool get_sub();
 		void set_carry(bool x);
 
 		void set_halfc(bool x);

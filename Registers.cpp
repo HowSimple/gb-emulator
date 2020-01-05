@@ -1,11 +1,8 @@
 #include "Registers.h"
 
-
-
-
 Registers::Registers()
 {
-	//af = 0;
+	af = 0;
 	f.zero = 0;
 	f.halfc = 0;
 	f.subt = 0;
@@ -38,19 +35,19 @@ void Registers::set_sub(bool x)
 {
 	f.subt = x;
 }
-u8 Registers::get_carry()
+bool Registers::get_carry()
 {
 	return f.carry;
 }
-u8 Registers::get_halfc()
+bool Registers::get_halfc()
 {
 	return f.halfc;
 }
-u8 Registers::get_zero()
+bool Registers::get_zero()
 {
 	return f.zero;
 }
-u8 Registers::get_sub()
+bool Registers::get_sub()
 {
 	return f.subt;
 }
