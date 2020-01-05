@@ -16,7 +16,7 @@ Graphics are not working.
 TODO:
 Sprite support.
 
-Timer register.
+Timer register support.
 
 Unit tests for the graphics system.
 Unit tests for interrupt handling.
