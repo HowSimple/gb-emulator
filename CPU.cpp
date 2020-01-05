@@ -1,39 +1,70 @@
-#include "Registers.h"
 #include"CPU.h"
-#define NZ !reg.f.zero
-#define NC !reg.f.carry
-#define Z reg.f.zero
-#define C reg.f.carry
+#include <iostream>
 
+void CPU::push_16b(u16 value)
+{
+	reg.sp--;
+	write_mem(reg.sp, value >> 8);
+	reg.sp--;
+	write_mem(reg.sp, (value & 0x00FF));
+
+}
+void CPU::check_lcd()
+{
+
+}
+u16 CPU::pop_16b()
+{
+	
+	u16 value = read_mem(reg.sp--) | read_mem(reg.sp--) << 8;
+	return value;
+	
+}
+void CPU::write_mem_16(u16 address, u16 value)
+{
+	u8 low = (value & 0xFF);
+	write_mem(address, (low));
+	u8 high = ((value & 0xFF00) >> 8);
+	write_mem(address + 1, high);
+}
 void CPU::write_mem(u16 address, u8 value)
 {
 	// read only address range
-	if ((address < 0x8000) )
-	{	
-		return;
-	}	
+	if ((address < 0x8000))
+	{
+		ram[address] = value;
+	}
 	// 'Echo RAM' address range
 	else if ((address >= 0xE000) && (address < 0xFE00))
-	{		 
+	{
 		ram[address] = value;
 		write_mem(address - 0x2000, value);
 	}
 	// scanline
 	else if (address == 0xFF44)
-	{	
+	{
 		ram[address] = 0;
 	}
 	// LCD control register address, forward to GPU
-	else if (address == ram[0xFF40])
+	else if (address == 0xFF40)
 		gpu.update_lcdc(value);
+	else if (address == 0xFF42)
+		gpu.bg_start.y = value;
+	else if (address == 0xFF43)
+		gpu.bg_start.x = value;
+	else if (address == 0xFF4A)
+		gpu.win_start.y = value + 7;
+	else if (address == 0xFF4B)
+		gpu.win_start.x = value;
+
 	//	Video RAM address range
 	else if ((address >= 0x8000) && (address <= 0x9FFF))
 		gpu.update_vram(address, value);
 	// restricted address range
-	else if ((address >= 0xFEA0) && (address < 0xFEFF))
-	{
-		return;
-	}	
+	//else if ((address >= 0xFEA0) && (address < 0xFEFF))
+	//{
+	//	return;
+	//}	
 	// standard address range
 	else ram[address] = value;
 }
@@ -41,19 +72,17 @@ u8& CPU::read_mem(u16 address)
 {	// Timer address
 	if (address == 0xFF06 || address == 0xFF07)
 	{	// TODO: implement timer 
-
+		u8 timer = 0;
+		std::cout << "TIMER CALL\n";
+		return timer;
 	}
-	// 
+	//
 	else if (address == 0xFF04)
 	{
 		u8 random_num = rand();
+		std::cout << "RAND CALL\n";
 		return random_num;
 	}
-	// restricted address range
-	else if ((address >= 0xFEA0) && (address < 0xFEFF))
-	{
-		return;
-	}	
 	else return ram[address];
 }
 u8 CPU::get_imm_8() // get 8-bit immediate value from RAM
@@ -64,30 +93,35 @@ u16 CPU::get_imm_16()	// get 16-bit immediate value from RAM
 {
 	u16 value = read_mem(reg.pc++);
 	value = value << 8;
-	value |= (read_mem(reg.pc) << 8);
+	value |= (read_mem(reg.pc++));
+	
 	return value;
 }
 s8 CPU::get_imm_s8() // get signed 8-bit immediate value from RAM
 {
-	return read_mem(++reg.pc);
+	return read_mem(reg.pc++);
 }
 
 void CPU::write_imm_16(u16 value)
 {
 	u8 high = value << 8;
 	u8 low = value >> 8;
-	write_mem(low, reg.pc++);
-	write_mem(high, reg.pc);
+	write_mem(reg.pc++, low);
+	write_mem(reg.pc, low);
 	
 
 }
 void CPU::write_imm_8(u8 value)
 {
-	write_mem(reg.pc++, value);
+	write_mem(reg.pc, value);
+	reg.pc++;
 }
 u8 CPU::fetch_opcode()
 {
-	u8 opcode = read_mem(reg.pc++);
+	
+	u8 opcode = read_mem(reg.pc);
+	std::cout << static_cast<int>(opcode) << " ";
+	reg.pc++;
 	return opcode;
 }
 void CPU::execute_cb_opcode(u8 opcode)
@@ -379,9 +413,9 @@ void CPU::execute_opcode(u8 opcode)
 	case 0x03: { op_inc(reg.bc);								cycles += 8;	break; }
 	case 0x04: { op_inc(reg.b);									cycles += 4;	break; }
 	case 0x05: { op_dec(reg.b);									cycles += 4;	break; }
-	case 0x06: { op_ld(reg.b, get_imm_16());					cycles += 8;	break; }
+	case 0x06: { op_ld(reg.b, get_imm_8());					cycles += 8;	break; }
 	case 0x07: { op_rlca();										cycles += 4;	break; }
-	case 0x08: { write_mem(reg.pc, reg.sp);						cycles += 20;	break; }
+	case 0x08: { write_mem_16(get_imm_16(), reg.sp);								cycles += 20;	break; }
 	case 0x09: { op_add(reg.hl, reg.bc);						cycles += 8;	break; }
 	case 0x0A: { op_ld(reg.a, read_mem(reg.bc));				cycles += 8;	break; }
 	case 0x0B: { op_dec(reg.bc);								cycles += 8;	break; }
@@ -390,7 +424,7 @@ void CPU::execute_opcode(u8 opcode)
 	case 0x0E: { op_ld(reg.c, get_imm_8());						cycles += 8;	break; }
 	case 0x0F: { op_rrca();										cycles += 4;	break; }
 	case 0x10: { op_stop();										cycles += 4;	break; }
-	case 0x11: { op_ld(reg.de, get_imm_8());					cycles += 12;	break; }
+	case 0x11: { op_ld(reg.de, get_imm_16());					cycles += 12;	break; }
 	case 0x12: { write_mem(reg.de, reg.a);						cycles += 8;	break; }
 	case 0x13: { op_inc(reg.de);								cycles += 4;	break; }
 	case 0x14: { op_inc(reg.d);									cycles += 4;	break; }
@@ -405,15 +439,15 @@ void CPU::execute_opcode(u8 opcode)
 	case 0x1D: { op_dec(reg.c);									cycles += 4;	break; }
 	case 0x1E: { op_ld(reg.c, get_imm_8());						cycles += 8;	break; }
 	case 0x1F: { op_rra();										cycles += 4;	break; }
-	case 0x20: { op_jr(NZ);										cycles += 12;	break; }
-	case 0x21: { op_ld(reg.hl, get_imm_8());					cycles += 12;	break; }
+	case 0x20: { op_jrc(!reg.get_zero());						cycles += 12;	break; }
+	case 0x21: { op_ld(reg.hl, get_imm_16());					cycles += 12;	break; }
 	case 0x22: { write_mem(reg.hl++, reg.a);					cycles += 8;	break; }
 	case 0x23: { op_inc(reg.hl);								cycles += 8;	break; }
 	case 0x24: { op_inc(reg.h);									cycles += 4;	break; }
 	case 0x25: { op_dec(reg.h);									cycles += 4;	break; }
 	case 0x26: { op_ld(reg.h, get_imm_8());						cycles += 8;	break; }
 	case 0x27: { op_daa();										cycles += 4;	break; }
-	case 0x28: { op_jr(Z);										cycles += 12;	break; }
+	case 0x28: { op_jrc(reg.get_zero());							cycles += 12;	break; }
 	case 0x29: { op_add(reg.hl, reg.bc);						cycles += 8;	break; }
 	case 0x2A: { op_ld(reg.a, read_mem(reg.hl++)); 				cycles += 8;	break; }
 	case 0x2B: { op_dec(reg.bc);								cycles += 8;	break; }
@@ -421,7 +455,7 @@ void CPU::execute_opcode(u8 opcode)
 	case 0x2D: { op_dec(reg.c);									cycles += 4;	break; }
 	case 0x2E: { op_ld(reg.c, get_imm_8());						cycles += 8;	break; }
 	case 0x2F: { op_rrca();										cycles += 4;	break; }
-	case 0x30: { op_jr(NC);										cycles += 12;	break; }
+	case 0x30: { op_jrc(!reg.get_carry());						cycles += 12;	break; }
 	case 0x31: { op_ld(reg.sp, get_imm_16());					cycles += 12;	break; }
 	case 0x32: { write_mem(reg.hl--, reg.a);					cycles += 8;	break; }
 	case 0x33: { op_inc(reg.sp);								cycles += 8;	break; }
@@ -429,7 +463,7 @@ void CPU::execute_opcode(u8 opcode)
 	case 0x35: { op_dec(read_mem(reg.hl));						cycles += 12;	break; }
 	case 0x36: { write_mem(reg.hl, get_imm_8());				cycles += 12;	break; }
 	case 0x37: { op_scf();										cycles += 4;	break; }
-	case 0x38: { op_jr(C);										cycles += 12;	break; }
+	case 0x38: { op_jrc(reg.get_carry());						cycles += 12;	break; }
 	case 0x39: { op_add(reg.hl, reg.sp);						cycles += 8;	break; }
 	case 0x3A: { op_ld(reg.a, read_mem(reg.hl--));				cycles += 8;	break; }
 	case 0x3B: { op_dec(reg.sp);								cycles += 4;	break; }
@@ -565,69 +599,69 @@ void CPU::execute_opcode(u8 opcode)
 	case 0xBD: { op_cp(reg.l);									cycles += 4;	break; }
 	case 0xBE: { op_cp(read_mem(reg.hl));						cycles += 8;	break; }
 	case 0xBF: { op_cp(reg.a);									cycles += 4;	break; }
-	case 0xC0: { op_ret(NZ);									cycles += 20;	break; }
-	case 0xC1: { op_pop(reg.bc);								cycles += 12;	break; }
-	case 0xC2: { op_jp(NZ);										cycles += 16;	break; }
-	case 0xC3: { op_jp();										cycles += 16;	break; }
-	case 0xC4: { op_call(NZ);									cycles += 24;	break; }
-	case 0xC5: { op_push(reg.bc);								cycles += 16;	break; }
+	case 0xC0: { op_ret(!reg.get_zero());						cycles += 20;	break; }
+	case 0xC1: { op_ld(reg.bc, pop_16b());								cycles += 12;	break; }
+	case 0xC2: { op_jpc(!reg.get_zero());						cycles += 16;	break; }
+	case 0xC3: { op_jp(get_imm_16());							cycles += 16;	break; }
+	case 0xC4: { op_call(!reg.get_zero());						cycles += 24;	break; }
+	case 0xC5: { push_16b(reg.bc);								cycles += 16;	break; }
 	case 0xC6: { op_add(reg.a, get_imm_8());					cycles += 8;	break; }
-	case 0xC7: { op_rst(get_imm_8());							cycles += 16;	break; }
-	case 0xC8: { op_ret(Z);										cycles += 20;	break; }
+	case 0xC7: { op_rst(0x00);							cycles += 32;	break; }
+	case 0xC8: { op_ret(reg.get_zero());						cycles += 20;	break; }
 	case 0xC9: { op_ret();										cycles += 20;	break; }
-	case 0xCA: { op_jp(Z);										cycles += 16;	break; }
-	case 0xCC: { op_call(Z);									cycles += 24;	break; }
+	case 0xCA: { op_jpc(reg.get_zero());						cycles += 16;	break; }
+	case 0xCC: { op_call(reg.get_zero());						cycles += 24;	break; }
 	case 0xCD: { op_call();										cycles += 24;	break; }
 	case 0xCE: { op_adc(reg.a, get_imm_8());					cycles += 8;	break; }
-	case 0xCF: { op_rst(get_imm_8());							cycles += 16;	break; }
-	case 0xD0: { op_ret(NC);									cycles += 20;	break; }
-	case 0xD1: { op_pop(reg.de);								cycles += 12;	break; }
-	case 0xD2: { op_jp(NC);										cycles += 16;	break; }
+	case 0xCF: { op_rst(0x08);							cycles += 32;	break; }
+	case 0xD0: { op_ret(!reg.get_carry());						cycles += 20;	break; }
+	case 0xD1: { op_ld(reg.de, pop_16b());						cycles += 12;	break; }
+	case 0xD2: { op_jpc(!reg.get_carry());						cycles += 16;	break; }
 	//	 0xD3 is an undefined opcode
-	case 0xD4: { op_call(NC);									cycles += 24;	break; }
-	case 0xD5: { op_push(reg.de);								cycles += 16;	break; }
+	case 0xD4: { op_call(!reg.get_carry());						cycles += 24;	break; }
+	case 0xD5: { push_16b(reg.de);								cycles += 16;	break; }
 	case 0xD6: { op_sub(reg.a, get_imm_8());					cycles += 8;	break; }
-	case 0xD7: { op_rst(get_imm_8());							cycles += 16;	break; }
-	case 0xD8: { op_ret(C);										cycles += 20;	break; }
+	case 0xD7: { op_rst(0x10);							cycles += 32;	break; }
+	case 0xD8: { op_ret(reg.get_carry());						cycles += 20;	break; }
 	case 0xD9: { op_ret(); op_ei();								cycles += 4;	break; }
-	case 0xDA: { op_jp(C);										cycles += 16;	break; }
+	case 0xDA: { op_jpc(reg.get_carry());						cycles += 16;	break; }
 	//   0xDB is an undefined opcode 
-	case 0xDC: { op_call(C);									cycles += 24;	break; }
+	case 0xDC: { op_call(reg.get_carry());						cycles += 24;	break; }
 	//   0xDD is an undefined opcode
 	case 0xDE: { op_sbc(reg.a, get_imm_8());					cycles += 8;	break; }
-	case 0xDF: { op_rst(get_imm_8());							cycles += 16;	break; }
+	case 0xDF: { op_rst(0x18);							cycles += 32;	break; }
 	case 0xE0: { write_mem(0xFF00 + get_imm_8(), reg.a);		cycles += 12;	break; }
-	case 0xE1: { op_pop(reg.hl);								cycles += 12;	break; }
+	case 0xE1: { op_ld(reg.hl, pop_16b());						cycles += 12;	break; }
 	case 0xE2: { write_mem(0xFF00 + reg.c, reg.a);				cycles += 16;	break; }
 	//   0xE3 is an undefined opcode
 	case 0xE4: { op_undefined();												break; }
-	case 0xE5: { op_push(reg.hl);								cycles += 16;	break; }
+	case 0xE5: { push_16b(reg.hl);								cycles += 16;	break; }
 	case 0xE6: { op_and(get_imm_8());							cycles += 8;	break; }
-	case 0xE7: { op_rst(get_imm_8());							cycles += 16;	break; }
+	case 0xE7: { op_rst(0x20);							cycles += 32;	break; }
 	case 0xE8: { op_add(reg.sp, get_imm_s8());					cycles += 16;	break; }
 	case 0xE9: { op_jp(read_mem(reg.hl));						cycles += 4;	break; }
 	case 0xEA: { write_imm_8(reg.a);							cycles += 16;	break; }
 	//   0xEB is an undefined opcode
-	case 0xEC: { op_call(Z);									cycles += 24;	break; }
+	case 0xEC: { op_call(reg.get_zero());						cycles += 24;	break; }
 	case 0xED: { op_call();										cycles += 24;	break; }
 	case 0xEE: { op_xor(get_imm_8());							cycles += 8;	break; }
-	case 0xEF: { op_rst(get_imm_8());							cycles += 16;	break; }
+	case 0xEF: { op_rst(0x28);							cycles += 32;	break; }
 	case 0xF0: { op_ld(reg.a,read_mem(0xFF00+get_imm_8()));		cycles += 12;	break; }
-	case 0xF1: { op_pop(reg.de);								cycles += 12;	break; }
+	case 0xF1: {op_ld(reg.de, pop_16b());						cycles += 12;	break; }
 	case 0xF2: { op_ld(reg.a, read_mem(0xFF00 + reg.c));		cycles += 8;	break; }
 	case 0xF3: { op_di();										cycles += 4;	break; }
 	//   0xF4  is an undefined opcode
-	case 0xF5: { op_push(reg.af);								cycles += 16;	break; }
+	case 0xF5: { push_16b(reg.af);								cycles += 16;	break; }
 	case 0xF6: { op_or(get_imm_8());							cycles += 8;	break; }
-	case 0xF7: { op_rst(get_imm_8());							cycles += 16;	break; }
+	case 0xF7: { op_rst(0x30);							cycles += 32;	break; }
 	case 0xF8: { op_ld(reg.hl, get_imm_s8() + reg.sp);			cycles += 12;	break; }
 	case 0xF9: { op_ld(reg.sp, reg.hl);							cycles += 8;	break; }
-	case 0xFA: { op_ld(reg.a, get_imm_16());					cycles += 16;	break; }
+	case 0xFA: { op_ld(reg.a, read_mem(get_imm_16()));					cycles += 16;	break; }
 	case 0xFB: { op_ei();										cycles += 4;	break; }
 	//	 0xFC is an undefined opcode
 	//	 0xFD is an undefined opcode
 	case 0xFE: { op_cp(get_imm_8());							cycles += 16;	break; }
-	case 0xFF: { op_rst(get_imm_8());							cycles += 16;	break; }
+	case 0xFF: { op_rst(0x38);							cycles += 32;	break; }
 
 	default:	 op_undefined();
 	}
