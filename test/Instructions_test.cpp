@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CPU.h"
+
 #define A cpu.reg.a
 #define B cpu.reg.b
 #define C cpu.reg.c
@@ -300,12 +301,13 @@ TEST(CPU, run_cb_opcode_0x10)
 }
 
 
-TEST(CPU, run_cb_opcode_0x18)
+TEST(CPU, rr01)
 {
 	CPU cpu;
 
 	B = 0b00001111;
 
 	cpu.execute_cb_opcode(0x18);
-	EXPECT_EQ(B, 0b10000111);
+	EXPECT_EQ(B, 0b00000111);
+	EXPECT_EQ(cpu.reg.get_carry(), 1);
 }
