@@ -108,7 +108,7 @@ void CPU::op_rrca() // right-rotate reg A and carry flag by 1 bit
 void CPU::op_rr(u8& target)	// rotate right. 
 {
 	bool temp = reg.f.carry;
-	reg.f.carry = (target & (1 << 7)) >> 7;
+	reg.f.carry = target & 1;
 	
 	target = ((target >> 1) | temp << 7);
 	reg.f.halfc = 0;
@@ -118,7 +118,7 @@ void CPU::op_rr(u8& target)	// rotate right.
 void CPU::op_rlca() // left-rotate reg A and carry flag by 1 bit
 {
 	bool temp = reg.f.carry;
-	reg.f.carry = (1 & (reg.a >> 7));
+	reg.f.carry = (reg.a >> 7)& 1;
 	reg.f.halfc = 0;
 	reg.f.subt = 0;
 	reg.f.zero = 0;
@@ -271,7 +271,7 @@ void CPU::op_jr(s8 address)
 }
 void CPU::op_jrc(bool condition)
 {
-	u16 address = get_imm_s8();
+	s8 address = get_imm_s8();
 	if (condition)
 		op_jr(address);
 	else
@@ -320,7 +320,7 @@ void CPU::op_ret()
 
 void CPU::op_bit(u8 bit, u8& target) // test bit 
 {
-	//u8 bit = (target >> bit) & 1;
+	bit = (target >> bit) & 1;
 	update_zero(target);
 	reg.f.subt = 0;
 	reg.f.halfc = 0;
