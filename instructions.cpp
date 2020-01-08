@@ -1,21 +1,27 @@
 #include "CPU.h"
 #include <stdexcept>
-
+#include <iostream>
 void CPU::update_halfc(u8 target, u8 source)
 {
 	reg.f.halfc = ((((target & 0xf) + (source & 0xf)) & 0x10) == 0x10);
 }
 void CPU::update_halfc(u16 target, u16 source)
 {
-	reg.f.halfc = ((((target & 0xff) + (source & 0xff)) & 0x80) == 0x80);
+	u8 target_high = target >> 8;
+	u8 source_high = source >> 8;
+	update_carry(target_high, source_high);
+	//reg.f.halfc = ((((target & 0xff) + (source & 0xff)) & 0x80) == 0x80);
+	//	reg.f.halfc = ((((target >> 8 & 0xf) + (source >> 8 & 0xf)) & 0x10) == 0x10);
 }
 void CPU::update_carry(u8 target, u8 source)
 {
-	reg.f.carry = ((((target & 0xf) + (source & 0xf)) & 0x10) == 0x10);
+	reg.f.carry = ((((target & 0xff) + (source & 0xff)) & 0x80) == 0x80);
 }
 void CPU::update_carry(u16 target, u16 source)
 {
-	reg.f.carry = ((((target & 0xff) + (source & 0xff)) & 0x80) == 0x80);
+	u8 target_high = target >> 8;
+	u8 source_high = source >> 8;
+	update_carry(target_high, source_high);
 }
 
 void CPU::update_zero(u8 target)
@@ -43,7 +49,8 @@ void CPU::op_ld(u16& target, u16 source) // load source to target
 
 void CPU::op_inc(u8& target) // increment target
 {
-	update_halfc(target, target++);
+	target++;
+	update_halfc(target-1, target);
 	update_zero(target);
 	reg.f.subt = 0;
 }
@@ -54,8 +61,8 @@ void CPU::op_inc(u16& target) // increment target
 }
 void CPU::op_dec(u8& target) // decrement target 
 {
-	update_halfc(target, --target);
-	//target--;
+	target--;
+	update_halfc(target+1, target);
 	update_zero(target);
 	reg.f.subt = 0;
 	
@@ -173,6 +180,7 @@ void CPU::op_srl(u8& value)	// shift right. bit 0 to carry flag. bit 7 set to 0.
 // arithmetic instructions
 void CPU::op_add(u8& target, u8 source) // adds value at source to target 
 {
+	//u8 temp
 	reg.set_sub(0);
 	update_carry(target, source);
 	update_halfc(target, source);
@@ -182,10 +190,12 @@ void CPU::op_add(u8& target, u8 source) // adds value at source to target
 
 void CPU::op_add(u16& target, u16 source) // adds value at source to target 
 {
+
+	reg.set_sub(0);
+	//halfcarry when carry from bit 11 to bit 12
 	update_carry(target, source);
 	update_halfc(target, source);
 	target += source;
-	update_zero(target);
 }
 
 void CPU::op_sub(u8& target, u8 source) // adds value at source to target 
@@ -254,16 +264,13 @@ void CPU::op_jp(u16 address) // jump to immediate address
 }
 void CPU::op_jpc(bool condition) // conditional jump
 {
-	u16 address = get_imm_16();
+	u16 address = get_word();
 	if (condition)
 		op_jp(address);
 	else
 		cycles -= 4;
 }
-void CPU::op_jr()
-{
-	reg.pc += get_imm_s8();
-}
+
 void CPU::op_jr(s8 address)
 {
 	reg.pc += address;
@@ -271,7 +278,7 @@ void CPU::op_jr(s8 address)
 }
 void CPU::op_jrc(bool condition)
 {
-	s8 address = get_imm_s8();
+	s8 address = get_signed_byte();
 	if (condition)
 		op_jr(address);
 	else
@@ -295,13 +302,13 @@ void CPU::op_call(bool condition) // conditionally call address
 	else
 	{	// TODO: cleanup. 
 		cycles -= 4;
-		get_imm_16();
+		get_word();
 	}
 }
 void CPU::op_call() // call address
 {	
 	push_16b(reg.pc);
-	op_jp(get_imm_16());
+	op_jp(get_word());
 
 
 }
@@ -349,11 +356,12 @@ void CPU::op_undefined() // undefined instruction
 }
 void CPU::op_halt() // stop CPU until interrupt
 {// TODO: needs implementation
+	is_halted = 1;
 
 }
 void CPU::op_stop() // stop CPU and video, wait until next button press
 {// TODO: needs implementation
-
+	// disable LCD
 }
 
 void CPU::op_cpl(u8 target) //  set target to complement of target
@@ -362,31 +370,27 @@ void CPU::op_cpl(u8 target) //  set target to complement of target
 	reg.f.subt = 1;
 	reg.f.halfc = 1;
 }
-void CPU::op_cp(u8 source)
+void CPU::op_cp(u8 value)
 {
-	u8 temp = reg.a - source;
+	u8 temp = reg.a - value;
 	reg.set_sub(1);
-	update_carry(temp, source);
-	update_halfc(temp, source);
+	update_carry(temp, reg.a);
+	update_halfc(temp, reg.a);
 	update_zero(temp);
 }
 
 // interrupt instructions
 void CPU::op_di() // disable interrupts after next instruction
 {	
-	interrupts.joypad.enabled = false;
-	interrupts.vblank.enabled = false;
-	interrupts.serial.enabled = false;
-	interrupts.timer.enabled = false;
-	interrupts.lcdstat.enabled = false;
+	if (!is_halted)
+		execute_opcode(get_byte());
+	interrupts_enabled = false;
 }
 void CPU::op_ei() // enable interrupts after next instruction
 {
-	interrupts.joypad.enabled = true;
-	interrupts.vblank.enabled = true;
-	interrupts.serial.enabled = true;
-	interrupts.timer.enabled = true;
-	interrupts.lcdstat.enabled = true;
+	if (!is_halted)
+		execute_opcode(get_byte());
+	interrupts_enabled = true;
 }
 
 void CPU::op_daa() // 
