@@ -9,13 +9,12 @@ Most CPU instructions work.
 Opcode fetching/decoding works. 
 Loading a ROM file works.
 
-Keyboard input is implemented, but has not yet been tested.
-Interrupt handling is implemented, but has not yet been tested.
-Graphics are not working. 
+Graphics are not working.
+Keyboard input is implemented, and seems to work. 
 
 TODO:
 Sprite support.
-
+Interrupt handling 
 Timer register support.
 
 Unit tests for the graphics system.
