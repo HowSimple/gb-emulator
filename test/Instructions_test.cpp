@@ -26,7 +26,7 @@ TEST(CPU, add01)
 	cpu.op_add(A, B);
 	EXPECT_EQ(A, 7);
 }
-TEST(CPU, add02_carry)
+TEST(CPU, add02)
 {
 	CPU cpu;
 	A = 0xFF;
@@ -34,7 +34,7 @@ TEST(CPU, add02_carry)
 
 	cpu.op_add(A, B);
 	EXPECT_EQ(A, 0x0);
-	EXPECT_EQ(F.get_carry(), 1);
+	EXPECT_EQ(cpu.reg.get_carry(), 1);
 }
 TEST(CPU, sub01)
 {
@@ -54,8 +54,8 @@ TEST(CPU, sub01f)
 	cpu.op_sub(A, B);
 	EXPECT_EQ(A, 0x4);
 
-	EXPECT_EQ(F.get_carry(), 0);
-	EXPECT_EQ(F.get_halfc(), 0);
+	EXPECT_EQ(cpu.reg.get_carry(), 0);
+	EXPECT_EQ(cpu.reg.get_halfc(), 0);
 }
 TEST(CPU, inc01)
 {
@@ -74,9 +74,9 @@ TEST(CPU, inc02)
 
 	cpu.op_inc(A);
 	EXPECT_EQ(A, 0);
-	EXPECT_EQ(F.get_carry(), 0);
-	EXPECT_EQ(F.get_zero(), 1);
-	EXPECT_EQ(F.get_halfc(), 0);
+	EXPECT_EQ(cpu.reg.get_carry(), 0);
+	EXPECT_EQ(cpu.reg.get_zero(), 1);
+	EXPECT_EQ(cpu.reg.get_halfc(), 0);
 
 
 }
@@ -105,8 +105,8 @@ TEST(CPU, and01)
 	cpu.op_and(B);
 	EXPECT_EQ(A, 0b00101010);
 
-	EXPECT_EQ(F.get_carry(), 0);
-	EXPECT_EQ(F.get_halfc(), 1);
+	EXPECT_EQ(cpu.reg.get_carry(), 0);
+	EXPECT_EQ(cpu.reg.get_halfc(), 1);
 
 
 }
@@ -128,7 +128,7 @@ TEST(CPU, or01F)
 
 	cpu.op_or(B);
 	EXPECT_EQ(A, 0b11101110);
-	EXPECT_EQ(F.get_zero(), 0);
+	EXPECT_EQ(cpu.reg.get_zero(), 0);
 
 }
 
@@ -151,10 +151,10 @@ TEST(CPU, xor01f)
 	cpu.op_xor(B);
 	EXPECT_EQ(A, 0b10000010);
 
-	EXPECT_EQ(F.get_carry(), 0);
-	EXPECT_EQ(F.get_halfc(), 0);
-	EXPECT_EQ(F.get_zero(), 0);
-	EXPECT_EQ(F.get_sub(), 0);
+	EXPECT_EQ(cpu.reg.get_carry(), 0);
+	EXPECT_EQ(cpu.reg.get_halfc(), 0);
+	EXPECT_EQ(cpu.reg.get_zero(), 0);
+	EXPECT_EQ(cpu.reg.get_sub(), 0);
 }
 
 TEST(CPU, swap01)
@@ -186,7 +186,7 @@ TEST(CPU, op_swap01)
 TEST(CPU, op_rr01)
 {
 	CPU cpu;
-	F.set_carry(0);
+	cpu.reg.set_carry(0);
 	A = 0b00111111;
 	cpu.op_rr(A);
 	EXPECT_EQ(A, 0b00011111);
@@ -215,7 +215,7 @@ TEST(CPU, op_sla02)
 	A = 0b10011111;
 	cpu.op_sla(A);
 	EXPECT_EQ(A, 0b00111110);
-	EXPECT_EQ(F.get_carry(), 1);
+	EXPECT_EQ(cpu.reg.get_carry(), 1);
 
 }
 TEST(CPU, op_sra01)
@@ -233,7 +233,7 @@ TEST(CPU, op_sra02)
 	A = 0b00111111;
 	cpu.op_sra(A);
 	EXPECT_EQ(A, 0b00011111);
-	EXPECT_EQ(F.get_carry(), 1);
+	EXPECT_EQ(cpu.reg.get_carry(), 1);
 }
 TEST(CPU, op_set01)
 {
@@ -258,10 +258,10 @@ TEST(CPU, op_sbc01)
 
 	A = 0b00111111;
 	B = 0b0;
-	F.set_carry(0);
+	cpu.reg.set_carry(0);
 	cpu.op_sbc(A, B);
 	EXPECT_EQ(A, 0b00111111);
-	F.set_carry(0);
+	cpu.reg.set_carry(0);
 	A = 0b00111111;
 	B = 0b111;
 	cpu.op_sbc(A, B);
@@ -275,7 +275,7 @@ TEST(CPU, op_adc01)
 
 	A = 0b00111100;
 	B = 0b10;
-	F.set_carry(0);
+	cpu.reg.set_carry(0);
 	cpu.op_adc(A, B);
 	EXPECT_EQ(A, 0b00111110);
 }
